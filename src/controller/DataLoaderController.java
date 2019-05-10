@@ -5,12 +5,15 @@
  */
 package controller;
 
+import Entity.Item;
+import Entity.Transaksi;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -81,19 +84,37 @@ public class DataLoaderController extends SwingWorker{
         DefaultTableModel tabel = (DefaultTableModel) this.tabel_transaksi.getModel();
         tabel.setRowCount(this.load_data.getJumlahSeluruhTransaksi());
         String daftar_item;
+        
+        List<Transaksi> daftarTransaksi = new ArrayList<>();
+                
         for(int i=0;i<this.load_data.getJumlahSeluruhTransaksi();i++){
+            
+            Transaksi transaksiBaru = new Transaksi(
+                    this.load_data.getDaftar_id_transaksi().get(i), 
+                    new ArrayList<Item>());
+            
             tabel.setValueAt(this.load_data.getDaftar_id_transaksi().get(i), i, 0);
             ArrayList<String> item = this.load_data.getDaftar_seluruh_item().get(i);
             daftar_item = "";
             for(String nama_item : item){
+                
+                Item itemBaru = new Item(nama_item);
+                transaksiBaru.addItem(itemBaru);
+                
                 daftar_item = daftar_item+ nama_item+", ";
             }
             tabel.setValueAt(daftar_item, i, 1);
+            
+            daftarTransaksi.add(transaksiBaru);
         }
+        
+        FpGrowth fpg = new FpGrowth(daftarTransaksi, 2);
+        fpg.fit();
     }
     
     
     public DataTransaksiController getLoad_data() {
+        
         return load_data;
     }
     

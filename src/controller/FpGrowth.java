@@ -5,7 +5,17 @@
  */
 package controller;
 
+import Entity.Item;
+import Entity.Transaksi;
 import View.Hasil;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -13,6 +23,212 @@ import javax.swing.table.DefaultTableModel;
  * @author Azhary Arliansyah
  */
 public class FpGrowth {
+    
+    private List<Transaksi> daftarTransaksi;
+    private Map<String, Integer> itemSupportCount;
+    private List<Map.Entry<String, Integer>> sortedItemSupportCount;
+    private int minimumSupportCount = 0;
+    private List<String> removedItems;
+    private Map<String, Map<String, Integer>> conditionalFPTree;
+    
+    public FpGrowth(List<Transaksi> daftarTransaksi) {
+        this.daftarTransaksi = daftarTransaksi;
+        this.itemSupportCount = new HashMap<>();
+        this.sortedItemSupportCount = new ArrayList<>();
+        this.removedItems = new ArrayList<>();
+        this.conditionalFPTree = new HashMap<>();
+    }
+    
+    public FpGrowth(List<Transaksi> daftarTransaksi, int minimumSupportCount) {
+        this.daftarTransaksi = daftarTransaksi;
+        this.itemSupportCount = new HashMap<>();
+        this.sortedItemSupportCount = new ArrayList<>();
+        this.removedItems = new ArrayList<>();
+        this.minimumSupportCount = minimumSupportCount;
+        this.conditionalFPTree = new HashMap<>();
+    }
+    
+    public void fit() {
+        this.calculateSupportCount();
+        this.filterSupportCount();
+        this.daftarTransaksi = this.resetTransaction();
+        this.conditionalFPTree = 
+                this.generateConditionalFPTree();
+        this.filterFPTree();
+        System.out.println("FPTREE SIZE: " + this.conditionalFPTree.size());
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+            System.out.println(e.getKey() + ": " + e.getValue().size());
+            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+                System.out.println("\t" + ee.getKey() + ": " + ee.getValue());
+            }
+        }
+    }
+    
+    private void calculateSupportCount() {
+        this.itemSupportCount = new HashMap<>();
+        this.daftarTransaksi.forEach(transaksi -> {
+            List<Item> daftarItem = transaksi.getItem();
+            for (Item item : daftarItem) {
+                String namaItem = item.getNama();
+                if (this.itemSupportCount.containsKey(namaItem)) {
+                    int supportCount = this.itemSupportCount.get(namaItem);
+                    this.itemSupportCount.put(namaItem, supportCount + 1);
+                } else {
+                    this.itemSupportCount.put(namaItem, 1);
+                }
+            }
+        });
+    }
+    
+    private void filterSupportCount() {
+        this.removedItems = new ArrayList<>();
+        Set<String> supportCountKeys = new HashSet<>(this.itemSupportCount.keySet());
+        for (String k : supportCountKeys) {
+            if (this.itemSupportCount.get(k) < 
+                    this.minimumSupportCount) {
+                Item newItem = new Item(k);
+                this.removedItems.add(newItem.getNama());
+                this.itemSupportCount.remove(k);
+            }
+        }
+        
+        this.sortedItemSupportCount = 
+                MathFx.sortMapInteger(this.itemSupportCount);
+    }
+    
+    private List<Transaksi> resetTransaction() {
+        System.out.println("START RESET TRANSACTION");
+        final List<Transaksi> daftarTransaksi = new ArrayList<>();
+        
+        final List<String> sortedOrder = new ArrayList<>();
+        this.sortedItemSupportCount.forEach(supportCount -> {
+            Item newItem = new Item(supportCount.getKey());
+            sortedOrder.add(newItem.getNama());
+        });
+        
+        this.daftarTransaksi.forEach(transaksi -> {
+            Transaksi transaksiBaru = new Transaksi(transaksi.getIdTransaksi());
+            Item[] daftarItemBaru = new Item[sortedOrder.size()];
+            List<Item> daftarItem = transaksi.getItem();
+            
+            daftarItem.forEach(item -> {
+                if (!this.removedItems.contains(item.getNama())) {
+                    int idx = sortedOrder.indexOf(item.getNama());
+                    if (idx != -1) {
+                        daftarItemBaru[idx] = item;
+                    }
+                }
+            });
+            
+            List<Item> itemList = Arrays.asList(daftarItemBaru);
+            List<Item> newItemList = new ArrayList<>();
+            for (Item il : itemList) {
+                if (il != null) {
+                    newItemList.add(il);
+                }
+            }
+            transaksiBaru.setItem(newItemList);
+            
+            daftarTransaksi.add(transaksiBaru);
+        });
+        System.out.println("END RESET TRANSACTION");
+        return daftarTransaksi;
+    }
+    
+    private Map<String, Map<String, Integer>> generateConditionalFPTree() {
+        System.out.println("START GENERATING FPTREE");
+        final Map<String, Map<String, Integer>> conditionalFPTree = 
+                new HashMap<>();
+        
+        this.daftarTransaksi.forEach(transaksi -> {
+            List<Item> daftarItem = transaksi.getItem();
+            if (daftarItem.size() <= 0) {
+                return; // continue
+            }
+//            daftarItem.stream().filter(value -> value != null);
+            List<Item> temporary = new ArrayList<>(daftarItem);
+            Item lastItem = temporary.remove(temporary.size() - 1);
+            
+            Map<String, Integer> FPTree;
+            if (conditionalFPTree.containsKey(lastItem.getNama())) {
+                FPTree = conditionalFPTree.get(lastItem.getNama());
+            } else {
+                FPTree = new HashMap<>();
+            } 
+
+            for (int i = 0; i < temporary.size(); i++) {
+                int n = 0;
+                if (FPTree.containsKey(temporary.get(i).getNama())) {
+                    n = FPTree.get(temporary.get(i).getNama());
+                }
+                FPTree.put(temporary.get(i).getNama(), n + 1);                
+                
+                
+                for (int k = 1; k < temporary.size(); k++) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(temporary.get(i).getNama());
+                    for (int j = i + k; j < temporary.size(); j++) {
+                        if (!temporary
+                                .get(j)
+                                .getNama()
+                                .equals(temporary
+                                        .get(i)
+                                        .getNama())) {
+                            sb.append("#" + temporary.get(j).getNama());
+                            int nn = 0;
+                            if (FPTree.containsKey(sb.toString())) {
+                                nn = FPTree.get(sb.toString());
+                            }
+                            FPTree.put(sb.toString(), nn + 1);
+                        }
+                    }
+                }
+            }
+            
+            conditionalFPTree.put(lastItem.getNama(), FPTree);
+        });
+        System.out.println("END GENERATING FPTREE");
+        return conditionalFPTree;
+    }
+    
+    private void filterFPTree() {
+        Map<String, Map<String, Integer>> temporary = 
+                new HashMap<>(this.conditionalFPTree);
+        temporary.forEach((key, value) -> {
+            Set<String> FPTreeKeys = new HashSet<>(value.keySet());
+            Map<String, Integer> FPTree = new HashMap<>(value);
+            for (String k : FPTreeKeys) {
+                if (FPTree.get(k) < 
+                        this.minimumSupportCount) {
+                    FPTree.remove(k);
+                }
+            }
+            if (FPTree.size() <= 0) {
+                this.conditionalFPTree.remove(key);
+                return;
+            }
+            this.conditionalFPTree.put(key, FPTree);
+        });
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     private Hasil panel_hasil;
     private DataTransaksiController data;
