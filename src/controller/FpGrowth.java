@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -30,6 +31,11 @@ public class FpGrowth {
     private int minimumSupportCount = 0;
     private List<String> removedItems;
     private Map<String, Map<String, Integer>> conditionalFPTree;
+    private Map<String, Map<String, Double>> ruleSupports;
+    private Map<String, Map<String, Double>> ruleConfidences;
+    private Map<String, Integer> jumlahTransaksiItem;
+    
+    private Hasil panel_hasil;
     
     public FpGrowth(List<Transaksi> daftarTransaksi) {
         this.daftarTransaksi = daftarTransaksi;
@@ -37,6 +43,10 @@ public class FpGrowth {
         this.sortedItemSupportCount = new ArrayList<>();
         this.removedItems = new ArrayList<>();
         this.conditionalFPTree = new HashMap<>();
+        this.jumlahTransaksiItem = new HashMap<>();
+        this.ruleSupports = new HashMap<>();
+        this.ruleConfidences = new HashMap<>();
+        this.panel_hasil = new Hasil("Aturan Asosiasi");
     }
     
     public FpGrowth(List<Transaksi> daftarTransaksi, int minimumSupportCount) {
@@ -46,22 +56,79 @@ public class FpGrowth {
         this.removedItems = new ArrayList<>();
         this.minimumSupportCount = minimumSupportCount;
         this.conditionalFPTree = new HashMap<>();
+        this.jumlahTransaksiItem = new HashMap<>();
+        this.ruleSupports = new HashMap<>();
+        this.ruleConfidences = new HashMap<>();
+        this.panel_hasil = new Hasil("Aturan Asosiasi");
     }
     
-    public void fit() {
+    public void fit(double minSupport, double minConfidence) {
         this.calculateSupportCount();
         this.filterSupportCount();
         this.daftarTransaksi = this.resetTransaction();
         this.conditionalFPTree = 
                 this.generateConditionalFPTree();
         this.filterFPTree();
-        System.out.println("FPTREE SIZE: " + this.conditionalFPTree.size());
+//        System.out.println("FPTREE SIZE: " + this.conditionalFPTree.size());
+//        for (Map.Entry<String, Map<String, Integer>> e : 
+//                this.conditionalFPTree.entrySet()) {
+//            System.out.println(e.getKey() + ": " + e.getValue().size());
+//            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+//                System.out.println("\t" + ee.getKey() + ": " + ee.getValue());
+//            }
+//        }
+        
+        this.calculateRuleSupportsAndConfidences(minSupport, minConfidence);
+        DefaultTableModel tabel = (DefaultTableModel) this.panel_hasil
+                .getTabel().getModel();
+        int totalRows = 0;
         for (Map.Entry<String, Map<String, Integer>> e : 
                 this.conditionalFPTree.entrySet()) {
-            System.out.println(e.getKey() + ": " + e.getValue().size());
+            totalRows += e.getValue().size();
+        }
+        tabel.setRowCount(totalRows);
+        int i = 0;
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
-                System.out.println("\t" + ee.getKey() + ": " + ee.getValue());
+//                System.out.println(e.getKey() + " => " + ee.getKey() + 
+//                        "(" + this.ruleSupports
+//                                .get(e.getKey())
+//                                .get(ee.getKey()) + ", " + 
+//                                this.ruleConfidences
+//                                .get(e.getKey())
+//                                .get(ee.getKey()) +")");
+                
+                    tabel.setValueAt(e.getKey() + " => " + ee.getKey(), i, 0);
+                    if (this.ruleSupports.get(e.getKey()) == null || 
+                            this.ruleConfidences.get(e.getKey()) == null) {
+                        continue;
+                    }
+                    tabel.setValueAt(this.ruleSupports
+                                .get(e.getKey())
+                                .get(ee.getKey()), i, 1);
+                    tabel.setValueAt(this.ruleConfidences
+                                .get(e.getKey())
+                                .get(ee.getKey()), i, 2);
+                    Main.writeLogProcess(e.getKey() + " => " + ee.getKey() + 
+                        "(" + this.ruleSupports
+                                .get(e.getKey())
+                                .get(ee.getKey()) + ", " + 
+                                this.ruleConfidences
+                                .get(e.getKey())
+                                .get(ee.getKey()) +")", 
+                        this.panel_hasil.getPanelLog());
+                    i++;
             }
+        }
+        
+        this.panel_hasil.setVisible(true);
+        if (i <= 0) {
+            JOptionPane.showMessageDialog(null,"Jumlah aturan asosiasi yang "
+                    + "telah difilter sebanyak 0 baris. "
+                    + "Silahkan gunakan nilai support dan "
+                    + "confidence yang berbeda.", 
+                    "OoOps !!",JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -69,6 +136,8 @@ public class FpGrowth {
         this.itemSupportCount = new HashMap<>();
         this.daftarTransaksi.forEach(transaksi -> {
             List<Item> daftarItem = transaksi.getItem();
+            Set<String> countedItems = new HashSet<>();
+            
             for (Item item : daftarItem) {
                 String namaItem = item.getNama();
                 if (this.itemSupportCount.containsKey(namaItem)) {
@@ -77,6 +146,15 @@ public class FpGrowth {
                 } else {
                     this.itemSupportCount.put(namaItem, 1);
                 }
+                
+                if (this.jumlahTransaksiItem.containsKey(namaItem) && 
+                        !countedItems.contains(namaItem)) {
+                    int jumlahItem = this.jumlahTransaksiItem.get(namaItem);
+                    this.jumlahTransaksiItem.put(namaItem, jumlahItem + 1);
+                } else {
+                    this.jumlahTransaksiItem.put(namaItem, 1);
+                }
+                countedItems.add(namaItem);
             }
         });
     }
@@ -213,6 +291,73 @@ public class FpGrowth {
         
     }
     
+    private void calculateRuleSupportsAndConfidences() {
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+            
+            
+            Map<String, Double> supports = this.ruleSupports.get(e.getKey());
+            if (supports == null) {
+                supports = new HashMap<>();
+            }
+            
+            Map<String, Double> confidences = this.ruleConfidences.get(e.getKey());
+            if (confidences == null) {
+                confidences = new HashMap<>();
+            }
+            
+            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+                double supportRatio = (double)ee.getValue() / 
+                        (double)this.daftarTransaksi.size();
+                double confidenceRatio = (double)ee.getValue() / 
+                        (double)this.jumlahTransaksiItem.get(e.getKey());
+                
+                supports.put(ee.getKey(), supportRatio);
+                confidences.put(ee.getKey(), confidenceRatio);
+            }
+            
+            this.ruleSupports.put(e.getKey(), supports);
+            this.ruleConfidences.put(e.getKey(), confidences);
+        }
+    }
+    
+    private void calculateRuleSupportsAndConfidences(double minSupport, 
+            double minConfidence) {
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+            Map<String, Double> supports = this.ruleSupports.get(e.getKey());
+            if (supports == null) {
+                supports = new HashMap<>();
+            }
+            
+            Map<String, Double> confidences = this.ruleConfidences.get(e.getKey());
+            if (confidences == null) {
+                confidences = new HashMap<>();
+            }
+            
+            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+                double supportRatio = (double)ee.getValue() / 
+                        (double)this.daftarTransaksi.size();
+                double confidenceRatio = (double)ee.getValue() / 
+                        (double)this.jumlahTransaksiItem.get(e.getKey());
+                
+                if (supportRatio < minSupport || 
+                        confidenceRatio < minConfidence) {
+                    continue;
+                }
+                
+                supports.put(ee.getKey(), supportRatio);
+                confidences.put(ee.getKey(), confidenceRatio);
+            }
+            
+            if (supports.size() <= 0 || confidences.size() <= 0) {
+                continue;
+            }
+            
+            this.ruleSupports.put(e.getKey(), supports);
+            this.ruleConfidences.put(e.getKey(), confidences);
+        }
+    }
     
     
     
@@ -229,8 +374,6 @@ public class FpGrowth {
     
     
     
-    
-    private Hasil panel_hasil;
     private DataTransaksiController data;
     private double support;
     private double confidence;

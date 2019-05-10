@@ -85,31 +85,31 @@ public class DataLoaderController extends SwingWorker{
         tabel.setRowCount(this.load_data.getJumlahSeluruhTransaksi());
         String daftar_item;
         
-        List<Transaksi> daftarTransaksi = new ArrayList<>();
+//        List<Transaksi> daftarTransaksi = new ArrayList<>();
                 
         for(int i=0;i<this.load_data.getJumlahSeluruhTransaksi();i++){
             
-            Transaksi transaksiBaru = new Transaksi(
-                    this.load_data.getDaftar_id_transaksi().get(i), 
-                    new ArrayList<Item>());
+//            Transaksi transaksiBaru = new Transaksi(
+//                    this.load_data.getDaftar_id_transaksi().get(i), 
+//                    new ArrayList<Item>());
             
             tabel.setValueAt(this.load_data.getDaftar_id_transaksi().get(i), i, 0);
             ArrayList<String> item = this.load_data.getDaftar_seluruh_item().get(i);
             daftar_item = "";
             for(String nama_item : item){
                 
-                Item itemBaru = new Item(nama_item);
-                transaksiBaru.addItem(itemBaru);
+//                Item itemBaru = new Item(nama_item);
+//                transaksiBaru.addItem(itemBaru);
                 
                 daftar_item = daftar_item+ nama_item+", ";
             }
             tabel.setValueAt(daftar_item, i, 1);
             
-            daftarTransaksi.add(transaksiBaru);
+//            daftarTransaksi.add(transaksiBaru);
         }
         
-        FpGrowth fpg = new FpGrowth(daftarTransaksi, 2);
-        fpg.fit();
+//        FpGrowth fpg = new FpGrowth(daftarTransaksi);
+//        fpg.fit();
     }
     
     
