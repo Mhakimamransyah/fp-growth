@@ -90,13 +90,15 @@ public class FpGrowth {
         for (Map.Entry<String, Map<String, Integer>> e : 
                 this.conditionalFPTree.entrySet()) {
             
+            if (this.ruleSupports.get(e.getKey()) == null || 
+                    this.ruleConfidences.get(e.getKey()) == null) {
+                continue;
+            }
+            
             Map<String, Double> lift = new HashMap<>();
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
                 
-                if (this.ruleSupports.get(e.getKey()) == null || 
-                        this.ruleConfidences.get(e.getKey()) == null) {
-                    continue;
-                }
+                
                 
                 if (this.ruleConfidences.containsKey(e.getKey()) && 
                             this.ruleConfidences.get(e.getKey())
