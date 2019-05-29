@@ -34,8 +34,92 @@ public class FpGrowth {
     private Map<String, Map<String, Double>> ruleSupports;
     private Map<String, Map<String, Double>> ruleConfidences;
     private Map<String, Integer> jumlahTransaksiItem;
+    private Map<String, Integer> jumlahTransaksiRule;
+    
+    private Map<String, Double> benchmarkConfidence;
+    private Map<String, Map<String, Double>> liftRatio;
     
     private Hasil panel_hasil;
+    
+    public void calculateLiftRatio() {
+        this.jumlahTransaksiRule = new HashMap<>();
+        this.benchmarkConfidence = new HashMap<>();
+        this.liftRatio = new HashMap<>();
+
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+
+            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+                
+                
+                
+                if (this.jumlahTransaksiRule.containsKey(ee.getKey())) {
+                    continue;
+                }
+                
+                int jumlahTransaksiItemRule = 0;
+                for (Transaksi transaksi : this.daftarTransaksi) {
+                    String[] items = ee.getKey().split("#");
+                    int inc = 0;
+                    
+                    for (String item : items) {
+                        for (Item it : transaksi.getItem()) {
+                            if (it.getNama().equals(item)) {
+                                inc++;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (inc == items.length) {
+                        jumlahTransaksiItemRule++;
+                    }
+                }
+                
+                this.jumlahTransaksiRule.put(ee.getKey(), 
+                        jumlahTransaksiItemRule);
+                this.benchmarkConfidence.put(ee.getKey(), 
+                        (double)jumlahTransaksiItemRule / 
+                                (double)this.daftarTransaksi.size());
+                
+            }
+            
+            
+        }
+        
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+            
+            Map<String, Double> lift = new HashMap<>();
+            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+                
+                if (this.ruleSupports.get(e.getKey()) == null || 
+                        this.ruleConfidences.get(e.getKey()) == null) {
+                    continue;
+                }
+                
+                if (this.ruleConfidences.containsKey(e.getKey()) && 
+                            this.ruleConfidences.get(e.getKey())
+                                    .containsKey(ee.getKey())) {
+                        
+                    double liftRatioValue = 
+                        (double)this.benchmarkConfidence.get(ee.getKey()) / 
+                        (double)this.ruleConfidences.get(e.getKey())
+                                .get(ee.getKey());
+//                    System.out.println((double)this.benchmarkConfidence.get(ee.getKey()) 
+//                            + " / " + (double)this.ruleConfidences.get(e.getKey()).get(ee.getKey())
+//                            + " = " + liftRatioValue);
+                    lift.put(ee.getKey(), liftRatioValue);
+                } else {
+//                    System.out.println(ee.getKey() + " LIFT RATIO NOT CALCULATED");
+                }
+            }
+            
+            this.liftRatio.put(e.getKey(), lift);
+            
+        }
+        
+    }
     
     public FpGrowth(List<Transaksi> daftarTransaksi) {
         this.daftarTransaksi = daftarTransaksi;
@@ -46,6 +130,9 @@ public class FpGrowth {
         this.jumlahTransaksiItem = new HashMap<>();
         this.ruleSupports = new HashMap<>();
         this.ruleConfidences = new HashMap<>();
+        this.benchmarkConfidence = new HashMap<>();
+        this.liftRatio = new HashMap<>();
+        this.jumlahTransaksiRule = new HashMap<>();
         this.panel_hasil = new Hasil("Aturan Asosiasi");
     }
     
@@ -79,6 +166,7 @@ public class FpGrowth {
 //        }
         
         this.calculateRuleSupportsAndConfidences(minSupport, minConfidence);
+        this.calculateLiftRatio();
         DefaultTableModel tabel = (DefaultTableModel) this.panel_hasil
                 .getTabel().getModel();
         int totalRows = 0;
@@ -90,6 +178,12 @@ public class FpGrowth {
         int i = 0;
         for (Map.Entry<String, Map<String, Integer>> e : 
                 this.conditionalFPTree.entrySet()) {
+            
+            if (this.ruleSupports.get(e.getKey()) == null || 
+                    this.ruleConfidences.get(e.getKey()) == null) {
+                continue;
+            }
+            
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
 //                System.out.println(e.getKey() + " => " + ee.getKey() + 
 //                        "(" + this.ruleSupports
@@ -100,23 +194,25 @@ public class FpGrowth {
 //                                .get(ee.getKey()) +")");
                 
                     tabel.setValueAt(e.getKey() + " => " + ee.getKey(), i, 0);
-                    if (this.ruleSupports.get(e.getKey()) == null || 
-                            this.ruleConfidences.get(e.getKey()) == null) {
-                        continue;
-                    }
                     tabel.setValueAt(this.ruleSupports
                                 .get(e.getKey())
-                                .get(ee.getKey()), i, 1);
+                                .getOrDefault(ee.getKey(), 0.0), i, 1);
                     tabel.setValueAt(this.ruleConfidences
                                 .get(e.getKey())
-                                .get(ee.getKey()), i, 2);
+                                .getOrDefault(ee.getKey(), 0.0), i, 2);
+                    tabel.setValueAt(this.benchmarkConfidence
+                                .getOrDefault(ee.getKey(), 0.0), i, 3);
+                    tabel.setValueAt(this.liftRatio
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0), i, 4);
+                    
                     Main.writeLogProcess(e.getKey() + " => " + ee.getKey() + 
                         "(" + this.ruleSupports
                                 .get(e.getKey())
-                                .get(ee.getKey()) + ", " + 
+                                .getOrDefault(ee.getKey(), 0.0) + ", " + 
                                 this.ruleConfidences
                                 .get(e.getKey())
-                                .get(ee.getKey()) +")", 
+                                .getOrDefault(ee.getKey(), 0.0) +")", 
                         this.panel_hasil.getPanelLog());
                     i++;
             }
