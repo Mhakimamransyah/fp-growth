@@ -144,6 +144,6 @@ public class DataLoaderController extends SwingWorker{
     protected void done(){
        this.tombol_muat_data.setEnabled(true);
        this.tombol_do_fp_growth.setEnabled(true);
-
+       this.progress_muat_data.setString("Data Loaded");
     }
 }
