@@ -1,0 +1,56 @@
+@startuml
+hide footbox
+title Asosiasi dengan FP-Growth\n
+
+actor Peneliti
+boundary Home
+control DataLoaderController
+control Main
+control FpGrowth
+
+activate Peneliti
+
+Peneliti -> Home : muatDataActionPerformed()
+activate Home
+Home -> DataLoaderController : execute()
+activate DataLoaderController
+DataLoaderController -> DataLoaderController: doInBackground()
+activate DataLoaderController
+DataLoaderController -> DataLoaderController : setTungguLoadDataGUI()
+activate DataLoaderController
+deactivate DataLoaderController
+DataLoaderController -> DataLoaderController : setTable()
+activate DataLoaderController
+deactivate DataLoaderController
+deactivate DataLoaderController
+deactivate DataLoaderController
+
+Peneliti -> Home : doFPGROWTHActionPerformed()
+Home -> Main : doFpGrowth(data, support, confidence)
+activate Main
+Main -> FpGrowth : fit(support, confidence)
+activate FpGrowth
+FpGrowth -> FpGrowth : calculateSupportCount()
+activate FpGrowth
+deactivate FpGrowth
+FpGrowth -> FpGrowth : filterSupportCount()
+activate FpGrowth
+deactivate FpGrowth
+FpGrowth -> FpGrowth : resetTransaction()
+activate FpGrowth
+FpGrowth --> FpGrowth : transactions
+deactivate FpGrowth
+FpGrowth -> FpGrowth : generateConditionalFPTree()
+activate FpGrowth
+FpGrowth --> FpGrowth : conditionalFPTree
+deactivate FpGrowth
+FpGrowth -> FpGrowth : filterFPTree()
+activate FpGrowth
+deactivate FpGrowth
+FpGrowth -> FpGrowth : calculateRuleSupportsAndConfidences(minSupport, minConfidence)
+activate FpGrowth
+deactivate FpGrowth
+FpGrowth -> FpGrowth : calculateLiftRatio()
+activate FpGrowth
+deactivate FpGrowth
+@enduml

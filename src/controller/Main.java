@@ -31,15 +31,6 @@ public class Main {
         home.setVisible(true);
     }
     
-//    public void doFpGrowth(DataTransaksiController data, double support, double confidence){
-//        if(data != null && data.getJumlahSeluruhTransaksi() > 0){
-//           FpGrowth fp_growth = new FpGrowth(data,support,confidence);
-//           fp_growth.doFpGrowth();
-//        }else{
-//            JOptionPane.showMessageDialog(null,"Data Kok Kosong ? ", "OoOps !!",JOptionPane.ERROR_MESSAGE);
-//        }
-//    }
-    
     public void doFpGrowth(DataTransaksiController data, double support, double confidence){
         if(data != null && data.getJumlahSeluruhTransaksi() > 0){
             List<Transaksi> daftarTransaksi = new ArrayList<>();

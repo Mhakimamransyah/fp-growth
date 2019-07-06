@@ -10,7 +10,6 @@ import Entity.Transaksi;
 import View.Hasil;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -158,15 +157,7 @@ public class FpGrowth {
         this.conditionalFPTree = 
                 this.generateConditionalFPTree();
         this.filterFPTree();
-//        System.out.println("FPTREE SIZE: " + this.conditionalFPTree.size());
-//        for (Map.Entry<String, Map<String, Integer>> e : 
-//                this.conditionalFPTree.entrySet()) {
-//            System.out.println(e.getKey() + ": " + e.getValue().size());
-//            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
-//                System.out.println("\t" + ee.getKey() + ": " + ee.getValue());
-//            }
-//        }
-        
+    
         this.calculateRuleSupportsAndConfidences(minSupport, minConfidence);
         this.calculateLiftRatio();
         DefaultTableModel tabel = (DefaultTableModel) this.panel_hasil
@@ -187,14 +178,7 @@ public class FpGrowth {
             }
             
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
-//                System.out.println(e.getKey() + " => " + ee.getKey() + 
-//                        "(" + this.ruleSupports
-//                                .get(e.getKey())
-//                                .get(ee.getKey()) + ", " + 
-//                                this.ruleConfidences
-//                                .get(e.getKey())
-//                                .get(ee.getKey()) +")");
-                
+
                     tabel.setValueAt(e.getKey() + " => " + ee.getKey(), i, 0);
                     tabel.setValueAt(this.ruleSupports
                                 .get(e.getKey())
