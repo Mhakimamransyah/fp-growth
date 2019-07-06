@@ -11,9 +11,11 @@ import View.Home;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.table.DefaultTableCellRenderer;
 /**
  *
@@ -31,7 +33,8 @@ public class Main {
         home.setVisible(true);
     }
     
-    public void doFpGrowth(DataTransaksiController data, double support, double confidence){
+    
+    public void doFpGrowth(DataTransaksiController data, double support, double confidence,JProgressBar progres,JButton tombol_fpgrowth){
         if(data != null && data.getJumlahSeluruhTransaksi() > 0){
             List<Transaksi> daftarTransaksi = new ArrayList<>();
             for(int i=0;i<data.getJumlahSeluruhTransaksi();i++){
@@ -48,8 +51,8 @@ public class Main {
                 }
                 daftarTransaksi.add(transaksiBaru);
             }
-            FpGrowth fpg = new FpGrowth(daftarTransaksi);
-            fpg.fit(support, confidence);
+            FpGrowth fpg = new FpGrowth(daftarTransaksi,support, confidence,progres,tombol_fpgrowth);
+            fpg.execute();
         }else{
             JOptionPane.showMessageDialog(null,"Data Kok Kosong ? ", "OoOps !!",JOptionPane.ERROR_MESSAGE);
         }

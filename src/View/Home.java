@@ -68,7 +68,9 @@ public class Home extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         confidence_label = new javax.swing.JTextField();
         support_label = new javax.swing.JTextField();
-        jPanel14 = new javax.swing.JPanel();
+        jPanel16 = new javax.swing.JPanel();
+        jPanel17 = new javax.swing.JPanel();
+        progressbar_fpgrowth = new javax.swing.JProgressBar();
         doFPGROWTH = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -121,8 +123,6 @@ public class Home extends javax.swing.JFrame {
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        tabel_transaksi.setBackground(new java.awt.Color(0, 153, 153));
-        tabel_transaksi.setForeground(new java.awt.Color(255, 255, 255));
         tabel_transaksi.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null},
@@ -146,20 +146,25 @@ public class Home extends javax.swing.JFrame {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        tabel_transaksi.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         tabel_transaksi.setAutoscrolls(false);
         tabel_transaksi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        tabel_transaksi.setGridColor(new java.awt.Color(255, 255, 255));
+        tabel_transaksi.setGridColor(new java.awt.Color(0, 0, 0));
         tabel_transaksi.setRowHeight(25);
         tabel_transaksi.setSelectionBackground(new java.awt.Color(255, 255, 0));
         tabel_transaksi.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jScrollPane1.setViewportView(tabel_transaksi);
+        if (tabel_transaksi.getColumnModel().getColumnCount() > 0) {
+            tabel_transaksi.getColumnModel().getColumn(0).setPreferredWidth(100);
+            tabel_transaksi.getColumnModel().getColumn(1).setPreferredWidth(2000);
+        }
 
         jPanel5.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -194,9 +199,8 @@ public class Home extends javax.swing.JFrame {
 
         jPanel7.add(jPanel9, java.awt.BorderLayout.LINE_END);
 
-        muatData.setBackground(new java.awt.Color(0, 0, 153));
-        muatData.setForeground(new java.awt.Color(255, 255, 255));
-        muatData.setText("Telusuri Data");
+        muatData.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/browse.png"))); // NOI18N
+        muatData.setText(" Data");
         muatData.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         muatData.setFocusPainted(false);
         muatData.addActionListener(new java.awt.event.ActionListener() {
@@ -254,7 +258,7 @@ public class Home extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(confidence_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(support_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
@@ -278,13 +282,21 @@ public class Home extends javax.swing.JFrame {
 
         content_control.add(jPanel12);
 
-        jPanel14.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        jPanel14.setPreferredSize(new java.awt.Dimension(906, 20));
-        jPanel14.setLayout(new java.awt.BorderLayout());
+        jPanel16.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel16.setPreferredSize(new java.awt.Dimension(906, 25));
+        jPanel16.setLayout(new java.awt.BorderLayout());
 
-        doFPGROWTH.setBackground(new java.awt.Color(0, 0, 153));
-        doFPGROWTH.setForeground(new java.awt.Color(255, 255, 255));
-        doFPGROWTH.setText("Fp-Growth");
+        jPanel17.setPreferredSize(new java.awt.Dimension(300, 30));
+        jPanel17.setLayout(new java.awt.BorderLayout());
+
+        progressbar_fpgrowth.setForeground(new java.awt.Color(204, 0, 0));
+        progressbar_fpgrowth.setStringPainted(true);
+        jPanel17.add(progressbar_fpgrowth, java.awt.BorderLayout.CENTER);
+
+        jPanel16.add(jPanel17, java.awt.BorderLayout.LINE_END);
+
+        doFPGROWTH.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/start.png"))); // NOI18N
+        doFPGROWTH.setText("fp-growth");
         doFPGROWTH.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         doFPGROWTH.setFocusPainted(false);
         doFPGROWTH.addActionListener(new java.awt.event.ActionListener() {
@@ -292,9 +304,9 @@ public class Home extends javax.swing.JFrame {
                 doFPGROWTHActionPerformed(evt);
             }
         });
-        jPanel14.add(doFPGROWTH, java.awt.BorderLayout.CENTER);
+        jPanel16.add(doFPGROWTH, java.awt.BorderLayout.CENTER);
 
-        content_control.add(jPanel14);
+        content_control.add(jPanel16);
 
         jPanel1.add(content_control);
 
@@ -308,22 +320,21 @@ public class Home extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void muatDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muatDataActionPerformed
+       this.data_loader_controller = new DataLoaderController(this.log_data,this.muatData,this.doFPGROWTH,this.progressbar_load_data,this.tabel_transaksi);
+       data_loader_controller.execute();
+    }//GEN-LAST:event_muatDataActionPerformed
+
     private void doFPGROWTHActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doFPGROWTHActionPerformed
         // TODO add your handling code here:
         if(this.data_loader_controller != null){
                 double support    = Double.parseDouble(this.support_label.getText());
                  double confidence = Double.parseDouble(this.confidence_label.getText());
-                 this.main.doFpGrowth(this.data_loader_controller.getLoad_data(),support,confidence); 
+                 this.main.doFpGrowth(this.data_loader_controller.getLoad_data(),support,confidence,this.progressbar_fpgrowth,this.doFPGROWTH); 
         }else{
             JOptionPane.showMessageDialog(null,"Data Belom Ada", "OoOps !!",JOptionPane.ERROR_MESSAGE);
         }
-        
     }//GEN-LAST:event_doFPGROWTHActionPerformed
-
-    private void muatDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muatDataActionPerformed
-       this.data_loader_controller = new DataLoaderController(this.log_data,this.muatData,this.doFPGROWTH,this.progressbar_load_data,this.tabel_transaksi);
-       data_loader_controller.execute();
-    }//GEN-LAST:event_muatDataActionPerformed
      
     private void centeringDataTable(){
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -380,7 +391,8 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
-    private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel16;
+    private javax.swing.JPanel jPanel17;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -393,6 +405,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel log_data;
     private javax.swing.JButton muatData;
+    private javax.swing.JProgressBar progressbar_fpgrowth;
     private javax.swing.JProgressBar progressbar_load_data;
     private javax.swing.JTextField support_label;
     private javax.swing.JTable tabel_transaksi;

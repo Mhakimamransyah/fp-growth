@@ -22,9 +22,7 @@ public class Hasil extends javax.swing.JFrame {
         initComponents();
         this.centeringDataTable();
         this.tittle.setText(hasil);
-        if(!hasil.equalsIgnoreCase("Aturan Asosiasi")){
-            this.control_button.hide();
-        }
+        
     }
 
     private Hasil() {
@@ -66,20 +64,18 @@ public class Hasil extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         log_fp_growth = new javax.swing.JPanel();
-        control_button = new javax.swing.JPanel();
-        uji = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("FP-GROWTH");
-        setPreferredSize(new java.awt.Dimension(600, 550));
+        setPreferredSize(new java.awt.Dimension(800, 650));
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.PAGE_AXIS));
 
         jPanel4.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createEtchedBorder()));
-        jPanel4.setPreferredSize(new java.awt.Dimension(677, 10));
+        jPanel4.setPreferredSize(new java.awt.Dimension(677, 50));
         jPanel4.setLayout(new java.awt.BorderLayout());
 
-        tittle.setFont(new java.awt.Font("Century Gothic", 0, 18)); // NOI18N
+        tittle.setFont(new java.awt.Font("Copperplate Gothic Bold", 0, 36)); // NOI18N
         tittle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         tittle.setText("Aturan Asosiasi");
         jPanel4.add(tittle, java.awt.BorderLayout.CENTER);
@@ -89,9 +85,10 @@ public class Hasil extends javax.swing.JFrame {
         jPanel2.setPreferredSize(new java.awt.Dimension(677, 230));
         jPanel2.setLayout(new java.awt.BorderLayout());
 
-        tabel_fp_growth.setBackground(new java.awt.Color(0, 102, 102));
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
         tabel_fp_growth.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        tabel_fp_growth.setForeground(new java.awt.Color(255, 255, 255));
         tabel_fp_growth.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
@@ -113,19 +110,23 @@ public class Hasil extends javax.swing.JFrame {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, true, true
+                true, false, false, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        tabel_fp_growth.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         tabel_fp_growth.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        tabel_fp_growth.setGridColor(new java.awt.Color(255, 255, 255));
+        tabel_fp_growth.setGridColor(new java.awt.Color(0, 0, 0));
         tabel_fp_growth.setRowHeight(20);
         tabel_fp_growth.setSelectionBackground(new java.awt.Color(255, 255, 0));
         tabel_fp_growth.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jScrollPane1.setViewportView(tabel_fp_growth);
+        if (tabel_fp_growth.getColumnModel().getColumnCount() > 0) {
+            tabel_fp_growth.getColumnModel().getColumn(0).setPreferredWidth(1000);
+        }
 
         jPanel2.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -145,34 +146,11 @@ public class Hasil extends javax.swing.JFrame {
 
         jPanel1.add(jPanel3);
 
-        control_button.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        control_button.setPreferredSize(new java.awt.Dimension(677, 5));
-        control_button.setLayout(new java.awt.BorderLayout());
-
-        uji.setBackground(new java.awt.Color(0, 0, 153));
-        uji.setForeground(new java.awt.Color(255, 255, 255));
-        uji.setText("Uji Kekuatan");
-        uji.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        uji.setFocusPainted(false);
-        uji.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ujiActionPerformed(evt);
-            }
-        });
-        control_button.add(uji, java.awt.BorderLayout.CENTER);
-
-        jPanel1.add(control_button);
-
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void ujiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ujiActionPerformed
-        // TODO add your handling code here:
-//        BELON
-    }//GEN-LAST:event_ujiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -211,7 +189,6 @@ public class Hasil extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel control_button;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -221,6 +198,5 @@ public class Hasil extends javax.swing.JFrame {
     private javax.swing.JPanel log_fp_growth;
     private javax.swing.JTable tabel_fp_growth;
     private javax.swing.JLabel tittle;
-    private javax.swing.JButton uji;
     // End of variables declaration//GEN-END:variables
 }

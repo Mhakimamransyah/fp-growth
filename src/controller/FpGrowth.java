@@ -15,16 +15,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author Azhary Arliansyah
  */
-public class FpGrowth {
+public class FpGrowth extends SwingWorker{
     
     private List<Transaksi> daftarTransaksi;
+    private JProgressBar progress_liftratio;
+    private JButton tombol_do_fp_growth;
+    private double minSupport,minConfidence;
     private Map<String, Integer> itemSupportCount;
     private List<Map.Entry<String, Integer>> sortedItemSupportCount;
     private int minimumSupportCount = 0;
@@ -45,9 +51,17 @@ public class FpGrowth {
         this.benchmarkConfidence = new HashMap<>();
         this.liftRatio = new HashMap<>();
 
+        this.progress_liftratio.setMaximum(100);
+        int iter = 1;
+        double maksimum_lift_ratio = this.conditionalFPTree.entrySet().size();
+        
         for (Map.Entry<String, Map<String, Integer>> e : 
                 this.conditionalFPTree.entrySet()) {
-
+            
+            double progress = (iter/maksimum_lift_ratio)*100;
+            this.progress_liftratio.setValue((int)progress);
+            this.progress_liftratio.setString("Calculate Lift Ratio... ("+(int)progress+"% )");
+            
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
                 
                 
@@ -83,9 +97,11 @@ public class FpGrowth {
                 
             }
             
+            iter++;
             
         }
         
+        iter = 1;
         for (Map.Entry<String, Map<String, Integer>> e : 
                 this.conditionalFPTree.entrySet()) {
             
@@ -95,6 +111,13 @@ public class FpGrowth {
             }
             
             Map<String, Double> lift = new HashMap<>();
+            
+            
+            double progress = (iter/maksimum_lift_ratio)*100;
+            this.progress_liftratio.setValue((int)progress);
+            this.progress_liftratio.setString("Finalize Calculate Lift Ratio... ("+(int)progress+"% )");
+            
+            
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
                 
                 
@@ -107,9 +130,6 @@ public class FpGrowth {
                         (double)this.benchmarkConfidence.get(ee.getKey()) / 
                         (double)this.ruleConfidences.get(e.getKey())
                                 .get(ee.getKey());
-//                    System.out.println((double)this.benchmarkConfidence.get(ee.getKey()) 
-//                            + " / " + (double)this.ruleConfidences.get(e.getKey()).get(ee.getKey())
-//                            + " = " + liftRatioValue);
                     lift.put(ee.getKey(), liftRatioValue);
                 } else {
 //                    System.out.println(ee.getKey() + " LIFT RATIO NOT CALCULATED");
@@ -118,11 +138,12 @@ public class FpGrowth {
             
             this.liftRatio.put(e.getKey(), lift);
             
+            iter++;
         }
         
     }
     
-    public FpGrowth(List<Transaksi> daftarTransaksi) {
+    public FpGrowth(List<Transaksi> daftarTransaksi,double minSupport, double minConfidence, JProgressBar progres,JButton tmbl_fp_growth) {
         this.daftarTransaksi = daftarTransaksi;
         this.itemSupportCount = new HashMap<>();
         this.sortedItemSupportCount = new ArrayList<>();
@@ -134,10 +155,14 @@ public class FpGrowth {
         this.benchmarkConfidence = new HashMap<>();
         this.liftRatio = new HashMap<>();
         this.jumlahTransaksiRule = new HashMap<>();
+        this.minSupport = minSupport;
+        this.minConfidence = minConfidence;
+        this.progress_liftratio = progres;
+        this.tombol_do_fp_growth = tmbl_fp_growth;
         this.panel_hasil = new Hasil("Aturan Asosiasi");
     }
     
-    public FpGrowth(List<Transaksi> daftarTransaksi, int minimumSupportCount) {
+    public FpGrowth(List<Transaksi> daftarTransaksi, int minimumSupportCount,double minSupport, double minConfidence,JProgressBar progres,JButton tmbl_fp_growth) {
         this.daftarTransaksi = daftarTransaksi;
         this.itemSupportCount = new HashMap<>();
         this.sortedItemSupportCount = new ArrayList<>();
@@ -147,6 +172,10 @@ public class FpGrowth {
         this.jumlahTransaksiItem = new HashMap<>();
         this.ruleSupports = new HashMap<>();
         this.ruleConfidences = new HashMap<>();
+        this.minSupport = minSupport;
+        this.minConfidence = minConfidence;
+        this.progress_liftratio = progres;
+        this.tombol_do_fp_growth = tmbl_fp_growth;
         this.panel_hasil = new Hasil("Aturan Asosiasi");
     }
     
@@ -178,7 +207,18 @@ public class FpGrowth {
             }
             
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
-
+                    System.out.println(e.getKey() + " => " + ee.getKey() + "::" + (this.ruleSupports
+                            .get(e.getKey())
+                            .getOrDefault(ee.getKey(), 0.0) < this.minSupport));
+                    if (this.ruleSupports
+                            .get(e.getKey())
+                            .getOrDefault(ee.getKey(), 0.0) < this.minSupport || 
+                        this.ruleConfidences
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0) < this.minConfidence) {
+                        continue;
+                    }
+                
                     tabel.setValueAt(e.getKey() + " => " + ee.getKey(), i, 0);
                     tabel.setValueAt(this.ruleSupports
                                 .get(e.getKey())
@@ -514,6 +554,103 @@ public class FpGrowth {
         }
     }
 //  ---------------------------------------------------------------------------
+
+    @Override
+    protected Object doInBackground() throws Exception {
+        this.progress_liftratio.setValue(0);
+        this.tombol_do_fp_growth.setEnabled(false);
+        this.progress_liftratio.setString("Calculate Support Count...");
+        this.calculateSupportCount();
+        this.progress_liftratio.setString("Filter Support Count...");
+        this.filterSupportCount();
+        this.progress_liftratio.setString("Reset Transaction...");
+        this.daftarTransaksi = this.resetTransaction();
+        this.progress_liftratio.setString("Generated Conditional FP Tree...");
+        this.conditionalFPTree = 
+                this.generateConditionalFPTree();
+        this.progress_liftratio.setString("Filter FP Tree...");
+        this.filterFPTree();
+//        System.out.println("FPTREE SIZE: " + this.conditionalFPTree.size());
+//        for (Map.Entry<String, Map<String, Integer>> e : 
+//                this.conditionalFPTree.entrySet()) {
+//            System.out.println(e.getKey() + ": " + e.getValue().size());
+//            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+//                System.out.println("\t" + ee.getKey() + ": " + ee.getValue());
+//            }
+//        }
+        
+        this.progress_liftratio.setString("Calculate Support And Confidences...");
+        this.calculateRuleSupportsAndConfidences(minSupport, minConfidence);
+        this.progress_liftratio.setString("Calculate Lift Ratio...");
+        this.calculateLiftRatio();
+        DefaultTableModel tabel = (DefaultTableModel) this.panel_hasil
+                .getTabel().getModel();
+        int totalRows = 0;
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+            totalRows += e.getValue().size();
+        }
+        tabel.setRowCount(totalRows);
+        int i = 0;
+        for (Map.Entry<String, Map<String, Integer>> e : 
+                this.conditionalFPTree.entrySet()) {
+            
+            if (this.ruleSupports.get(e.getKey()) == null || 
+                    this.ruleConfidences.get(e.getKey()) == null) {
+                continue;
+            }
+            
+            for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
+//                System.out.println(e.getKey() + " => " + ee.getKey() + 
+//                        "(" + this.ruleSupports
+//                                .get(e.getKey())
+//                                .get(ee.getKey()) + ", " + 
+//                                this.ruleConfidences
+//                                .get(e.getKey())
+//                                .get(ee.getKey()) +")");
+                
+                    tabel.setValueAt(e.getKey() + " => " + ee.getKey(), i, 0);
+                    tabel.setValueAt(this.ruleSupports
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0), i, 1);
+                    tabel.setValueAt(this.ruleConfidences
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0), i, 2);
+                    tabel.setValueAt(this.benchmarkConfidence
+                                .getOrDefault(ee.getKey(), 0.0), i, 3);
+                    tabel.setValueAt(this.liftRatio
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0), i, 4);
+                    
+                    Main.writeLogProcess(e.getKey() + " => " + ee.getKey() + 
+                        "(" + this.ruleSupports
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0) + ", " + 
+                                this.ruleConfidences
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0) +")", 
+                        this.panel_hasil.getPanelLog());
+                    i++;
+            }
+        }
+        
+        if (i <= 0) {
+            JOptionPane.showMessageDialog(null,"Jumlah aturan asosiasi yang "
+                    + "telah difilter sebanyak 0 baris. "
+                    + "Silahkan gunakan nilai support dan "
+                    + "confidence yang berbeda.", 
+                    "OoOps !!",JOptionPane.ERROR_MESSAGE);
+        }else{
+            this.panel_hasil.setVisible(true); 
+        }
+        return null;
+    }
+    
+    @Override
+    protected void done(){
+       this.tombol_do_fp_growth.setEnabled(true);
+       this.progress_liftratio.setString("Fp Growth Finish");
+    }
     
     
   
