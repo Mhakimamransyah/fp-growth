@@ -33,7 +33,7 @@ public class FpGrowth extends SwingWorker{
     private double minSupport,minConfidence;
     private Map<String, Integer> itemSupportCount;
     private List<Map.Entry<String, Integer>> sortedItemSupportCount;
-    private int minimumSupportCount = 0;
+    private int minimumSupportCount = 2;
     private List<String> removedItems;
     private Map<String, Map<String, Integer>> conditionalFPTree;
     private Map<String, Map<String, Double>> ruleSupports;
@@ -279,6 +279,8 @@ public class FpGrowth extends SwingWorker{
                 countedItems.add(namaItem);
             }
         });
+        
+        
     }
     
     private void filterSupportCount() {
@@ -298,7 +300,6 @@ public class FpGrowth extends SwingWorker{
     }
     
     private List<Transaksi> resetTransaction() {
-        System.out.println("START RESET TRANSACTION");
         final List<Transaksi> daftarTransaksi = new ArrayList<>();
         
         final List<String> sortedOrder = new ArrayList<>();
@@ -320,7 +321,6 @@ public class FpGrowth extends SwingWorker{
                     }
                 }
             });
-            
             List<Item> itemList = Arrays.asList(daftarItemBaru);
             List<Item> newItemList = new ArrayList<>();
             for (Item il : itemList) {
@@ -332,63 +332,127 @@ public class FpGrowth extends SwingWorker{
             
             daftarTransaksi.add(transaksiBaru);
         });
-        System.out.println("END RESET TRANSACTION");
         return daftarTransaksi;
     }
     
     private Map<String, Map<String, Integer>> generateConditionalFPTree() {
-        System.out.println("START GENERATING FPTREE");
         final Map<String, Map<String, Integer>> conditionalFPTree = 
                 new HashMap<>();
         
         this.daftarTransaksi.forEach(transaksi -> {
             List<Item> daftarItem = transaksi.getItem();
-            if (daftarItem.size() <= 0) {
-                return; // continue
-            }
-//            daftarItem.stream().filter(value -> value != null);
-            List<Item> temporary = new ArrayList<>(daftarItem);
-            Item lastItem = temporary.remove(temporary.size() - 1);
-            
-            Map<String, Integer> FPTree;
-            if (conditionalFPTree.containsKey(lastItem.getNama())) {
-                FPTree = conditionalFPTree.get(lastItem.getNama());
-            } else {
-                FPTree = new HashMap<>();
-            } 
+            if (daftarItem.size() > 0) {
+                List<Item> temporary = new ArrayList<>(daftarItem);
+                for (int l = temporary.size() - 1; l >= 0; l--) {
+                    Item lastItem = temporary.get(l);
+                    Map<String, Integer> FPTree;
+                    if (conditionalFPTree.containsKey(lastItem.getNama())) {
+                        FPTree = conditionalFPTree.get(lastItem.getNama());
+                    } else {
+                        FPTree = new HashMap<>();
+                    } 
 
-            for (int i = 0; i < temporary.size(); i++) {
-                int n = 0;
-                if (FPTree.containsKey(temporary.get(i).getNama())) {
-                    n = FPTree.get(temporary.get(i).getNama());
-                }
-                FPTree.put(temporary.get(i).getNama(), n + 1);                
-                
-                
-                for (int k = 1; k < temporary.size(); k++) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(temporary.get(i).getNama());
-                    for (int j = i + k; j < temporary.size(); j++) {
-                        if (!temporary
-                                .get(j)
+                    for (int i = l; i >= 0; i--) {
+                        if (temporary.get(i)
                                 .getNama()
-                                .equals(temporary
-                                        .get(i)
-                                        .getNama())) {
-                            sb.append("#" + temporary.get(j).getNama());
-                            int nn = 0;
-                            if (FPTree.containsKey(sb.toString())) {
-                                nn = FPTree.get(sb.toString());
+                                .equals(lastItem.getNama())) {
+                            continue;
+                        }
+                        
+                        int n = 0;
+                        if (FPTree.containsKey(temporary.get(i).getNama())) {
+                            n = FPTree.get(temporary.get(i).getNama());
+                        }
+                        FPTree.put(temporary.get(i).getNama(), n + 1);                
+
+
+                        for (int k = 0; k <= i; k++) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(temporary.get(i).getNama());
+                            for (int j = k; j <= i; j++) {
+                                if (temporary.get(j)
+                                        .getNama()
+                                        .equals(lastItem.getNama())) {
+                                    continue;
+                                }
+                                
+                                if (!temporary
+                                        .get(j)
+                                        .getNama()
+                                        .equals(temporary
+                                                .get(i)
+                                                .getNama())) {
+                                    sb.append("#" + temporary.get(j).getNama());
+                                    int nn = 0;
+                                    if (FPTree.containsKey(sb.toString())) {
+                                        nn = FPTree.get(sb.toString());
+                                    }
+                                    FPTree.put(sb.toString(), nn + 1);
+                                }
                             }
-                            FPTree.put(sb.toString(), nn + 1);
                         }
                     }
+
+                    conditionalFPTree.put(lastItem.getNama(), FPTree);
                 }
+//                temporary.forEach(lastItem -> {
+//                    Map<String, Integer> FPTree;
+//                    if (conditionalFPTree.containsKey(lastItem.getNama())) {
+//                        FPTree = conditionalFPTree.get(lastItem.getNama());
+//                    } else {
+//                        FPTree = new HashMap<>();
+//                    } 
+//
+//                    for (int i = 0; i < temporary.size(); i++) {
+//                        if (temporary.get(i)
+//                                .getNama()
+//                                .equals(lastItem.getNama())) {
+//                            continue;
+//                        }
+//                        
+//                        int n = 0;
+//                        if (FPTree.containsKey(temporary.get(i).getNama())) {
+//                            n = FPTree.get(temporary.get(i).getNama());
+//                        }
+//                        FPTree.put(temporary.get(i).getNama(), n + 1);                
+//
+//
+//                        for (int k = 1; k < temporary.size(); k++) {
+//                            StringBuilder sb = new StringBuilder();
+//                            sb.append(temporary.get(i).getNama());
+//                            for (int j = i + k; j < temporary.size(); j++) {
+//                                if (temporary.get(j)
+//                                        .getNama()
+//                                        .equals(lastItem.getNama())) {
+//                                    continue;
+//                                }
+//                                
+//                                if (!temporary
+//                                        .get(j)
+//                                        .getNama()
+//                                        .equals(temporary
+//                                                .get(i)
+//                                                .getNama())) {
+//                                    sb.append("#" + temporary.get(j).getNama());
+//                                    int nn = 0;
+//                                    if (FPTree.containsKey(sb.toString())) {
+//                                        nn = FPTree.get(sb.toString());
+//                                    }
+//                                    FPTree.put(sb.toString(), nn + 1);
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    conditionalFPTree.put(lastItem.getNama(), FPTree);
+//                });
+//                Item lastItem = temporary.remove(temporary.size() - 1);
+
+                
             }
             
-            conditionalFPTree.put(lastItem.getNama(), FPTree);
         });
-        System.out.println("END GENERATING FPTREE");
+
         return conditionalFPTree;
     }
     
@@ -570,7 +634,7 @@ public class FpGrowth extends SwingWorker{
                 this.generateConditionalFPTree();
         this.progress_liftratio.setString("Filter FP Tree...");
         this.filterFPTree();
-//        System.out.println("FPTREE SIZE: " + this.conditionalFPTree.size());
+        
 //        for (Map.Entry<String, Map<String, Integer>> e : 
 //                this.conditionalFPTree.entrySet()) {
 //            System.out.println(e.getKey() + ": " + e.getValue().size());
@@ -601,13 +665,15 @@ public class FpGrowth extends SwingWorker{
             }
             
             for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
-//                System.out.println(e.getKey() + " => " + ee.getKey() + 
-//                        "(" + this.ruleSupports
-//                                .get(e.getKey())
-//                                .get(ee.getKey()) + ", " + 
-//                                this.ruleConfidences
-//                                .get(e.getKey())
-//                                .get(ee.getKey()) +")");
+
+                    if (this.ruleSupports
+                            .get(e.getKey())
+                            .getOrDefault(ee.getKey(), 0.0) < this.minSupport || 
+                        this.ruleConfidences
+                                .get(e.getKey())
+                                .getOrDefault(ee.getKey(), 0.0) < this.minConfidence) {
+                        continue;
+                    }
                 
                     tabel.setValueAt(e.getKey() + " => " + ee.getKey(), i, 0);
                     tabel.setValueAt(this.ruleSupports
