@@ -34,7 +34,7 @@ public class Main {
     }
     
     
-    public void doFpGrowth(DataTransaksiController data, double support, double confidence,JProgressBar progres,JButton tombol_fpgrowth){
+    public void doFpGrowth(DataTransaksiController data, int minSupportCount, double support, double confidence,JProgressBar progres,JButton tombol_fpgrowth){
         if(data != null && data.getJumlahSeluruhTransaksi() > 0){
             List<Transaksi> daftarTransaksi = new ArrayList<>();
             for(int i=0;i<data.getJumlahSeluruhTransaksi();i++){
@@ -51,7 +51,7 @@ public class Main {
                 }
                 daftarTransaksi.add(transaksiBaru);
             }
-            FpGrowth fpg = new FpGrowth(daftarTransaksi,support, confidence,progres,tombol_fpgrowth);
+            FpGrowth fpg = new FpGrowth(daftarTransaksi, minSupportCount, support, confidence,progres,tombol_fpgrowth);
             fpg.execute();
         }else{
             JOptionPane.showMessageDialog(null,"Data Kok Kosong ? ", "OoOps !!",JOptionPane.ERROR_MESSAGE);

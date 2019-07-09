@@ -68,6 +68,8 @@ public class Home extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         confidence_label = new javax.swing.JTextField();
         support_label = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        minSupport_label = new javax.swing.JTextField();
         jPanel16 = new javax.swing.JPanel();
         jPanel17 = new javax.swing.JPanel();
         progressbar_fpgrowth = new javax.swing.JProgressBar();
@@ -234,15 +236,28 @@ public class Home extends javax.swing.JFrame {
 
         support_label.setText("0.2");
 
+        jLabel5.setText("Min Support Count");
+
+        minSupport_label.setText("2");
+        minSupport_label.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                minSupport_labelActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
         jPanel13.setLayout(jPanel13Layout);
         jPanel13Layout.setHorizontalGroup(
             jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel13Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(jLabel3)
-                .addGap(60, 60, 60)
-                .addComponent(support_label, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel5))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(support_label, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(minSupport_label, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 133, Short.MAX_VALUE)
                 .addComponent(jLabel4)
                 .addGap(42, 42, 42)
@@ -254,11 +269,18 @@ public class Home extends javax.swing.JFrame {
             .addGroup(jPanel13Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
                     .addComponent(jLabel4)
-                    .addComponent(confidence_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(support_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(confidence_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(21, Short.MAX_VALUE))
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(support_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(minSupport_label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
@@ -328,13 +350,19 @@ public class Home extends javax.swing.JFrame {
     private void doFPGROWTHActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doFPGROWTHActionPerformed
         // TODO add your handling code here:
         if(this.data_loader_controller != null){
-                double support    = Double.parseDouble(this.support_label.getText());
-                 double confidence = Double.parseDouble(this.confidence_label.getText());
-                 this.main.doFpGrowth(this.data_loader_controller.getLoad_data(),support,confidence,this.progressbar_fpgrowth,this.doFPGROWTH); 
+            double support    = Double.parseDouble(this.support_label.getText());
+            int minSupportCount = Integer.parseInt(this.minSupport_label.getText());
+            double confidence = Double.parseDouble(this.confidence_label.getText());
+            this.main.doFpGrowth(this.data_loader_controller.getLoad_data(),minSupportCount, support,confidence,this.progressbar_fpgrowth,this.doFPGROWTH); 
+            
         }else{
             JOptionPane.showMessageDialog(null,"Data Belom Ada", "OoOps !!",JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_doFPGROWTHActionPerformed
+
+    private void minSupport_labelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_minSupport_labelActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_minSupport_labelActionPerformed
      
     private void centeringDataTable(){
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -387,6 +415,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel12;
@@ -404,6 +433,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel log_data;
+    private javax.swing.JTextField minSupport_label;
     private javax.swing.JButton muatData;
     private javax.swing.JProgressBar progressbar_fpgrowth;
     private javax.swing.JProgressBar progressbar_load_data;

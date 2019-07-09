@@ -143,7 +143,7 @@ public class FpGrowth extends SwingWorker{
         
     }
     
-    public FpGrowth(List<Transaksi> daftarTransaksi,double minSupport, double minConfidence, JProgressBar progres,JButton tmbl_fp_growth) {
+    public FpGrowth(List<Transaksi> daftarTransaksi, int minSupportCount, double minSupport, double minConfidence, JProgressBar progres,JButton tmbl_fp_growth) {
         this.daftarTransaksi = daftarTransaksi;
         this.itemSupportCount = new HashMap<>();
         this.sortedItemSupportCount = new ArrayList<>();
@@ -156,29 +156,30 @@ public class FpGrowth extends SwingWorker{
         this.liftRatio = new HashMap<>();
         this.jumlahTransaksiRule = new HashMap<>();
         this.minSupport = minSupport;
+        this.minimumSupportCount = minSupportCount;
         this.minConfidence = minConfidence;
         this.progress_liftratio = progres;
         this.tombol_do_fp_growth = tmbl_fp_growth;
         this.panel_hasil = new Hasil("Aturan Asosiasi");
     }
-    
-    public FpGrowth(List<Transaksi> daftarTransaksi, int minimumSupportCount,double minSupport, double minConfidence,JProgressBar progres,JButton tmbl_fp_growth) {
-        this.daftarTransaksi = daftarTransaksi;
-        this.itemSupportCount = new HashMap<>();
-        this.sortedItemSupportCount = new ArrayList<>();
-        this.removedItems = new ArrayList<>();
-        this.minimumSupportCount = minimumSupportCount;
-        this.conditionalFPTree = new HashMap<>();
-        this.jumlahTransaksiItem = new HashMap<>();
-        this.ruleSupports = new HashMap<>();
-        this.ruleConfidences = new HashMap<>();
-        this.minSupport = minSupport;
-        this.minConfidence = minConfidence;
-        this.progress_liftratio = progres;
-        this.tombol_do_fp_growth = tmbl_fp_growth;
-        this.panel_hasil = new Hasil("Aturan Asosiasi");
-    }
-    
+//    
+//    public FpGrowth(List<Transaksi> daftarTransaksi, int minimumSupportCount,double minSupport, double minConfidence,JProgressBar progres,JButton tmbl_fp_growth) {
+//        this.daftarTransaksi = daftarTransaksi;
+//        this.itemSupportCount = new HashMap<>();
+//        this.sortedItemSupportCount = new ArrayList<>();
+//        this.removedItems = new ArrayList<>();
+//        this.minimumSupportCount = minimumSupportCount;
+//        this.conditionalFPTree = new HashMap<>();
+//        this.jumlahTransaksiItem = new HashMap<>();
+//        this.ruleSupports = new HashMap<>();
+//        this.ruleConfidences = new HashMap<>();
+//        this.minSupport = minSupport;
+//        this.minConfidence = minConfidence;
+//        this.progress_liftratio = progres;
+//        this.tombol_do_fp_growth = tmbl_fp_growth;
+//        this.panel_hasil = new Hasil("Aturan Asosiasi");
+//    }
+//    
     public void fit(double minSupport, double minConfidence) {
         this.calculateSupportCount();
         this.filterSupportCount();
